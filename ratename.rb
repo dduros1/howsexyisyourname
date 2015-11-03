@@ -8,20 +8,36 @@
 #    exit
 #end
 
+
+require 'similarity'
+
+corpus = Corpus.new
+
+psnames = File.readlines('psnamelist.txt').each {|l| l.chomp!.downcase!};
+
+#want to do doc similarity based on characters, not just names (don't have enough name data)
+
+
+
+
+
+
 $alphabet = [*('a'..'z')]
-$pscounts = [0]*alphabet.size
+$pscounts = [0]*$alphabet.size
 $firstnames = []
 
 
 #TODO this is kinda c-ish
 #sums character ocurrences and returns them in the same array it was passed
 def count_letters (name, counts)
+    sum = 0
     $alphabet.each_with_index { |val, index| counts[index] += name.count(val) }
     counts
 end
 
 #calculates the score for a given name
 def calc_score(name)
+    
     count = [0]*$alphabet.size
     count_letters(name, count)
 
@@ -30,19 +46,26 @@ def calc_score(name)
     score = score / (name.size - name.count(' '))
     score *= 2 if $firstnames.include? name.downcase.split(' ').first
 
+    score
+end
+
+def normalize_counts
+    total_letters = $pscounts.inject{|sum, x| sum+=x}
+    $pscounts.map! {|x| x = x.to_f/total_letters}
 end
 
 #yourname = ARGV.first.downcase
 yourname = 'Diane Hosfelt'.downcase!
 
+
 psnames = File.readlines('psnamelist.txt').each {|l| l.chomp!.downcase!};
 psnames.each do |l| 
-    firstnames << l.split(' ').first
+    $firstnames << l.split(' ').first
 end
 
 
-psnames.each { |name| count_letters(name, pscounts)}
-    
+psnames.each { |name| count_letters(name, $pscounts)}
+   
 yourscore = calc_score(yourname)
 
 
